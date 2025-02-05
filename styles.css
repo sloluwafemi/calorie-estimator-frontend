@@ -1,0 +1,95 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font stack */
+    margin: 0;
+    background-color: #f8f9fa; /* Very light gray background */
+    color: #343a40; /* Dark gray text */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding-top: 60px; /* Add top padding for navbar */
+}
+
+.container {
+    width: 80%; /* Occupy most of the screen width */
+    max-width: 960px; /* Set a maximum width for larger screens */
+    margin: 0 auto; /* Center the container */
+    padding: 20px;
+    background-color: #fff; /* White background for content area */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border-radius: 8px; /* Rounded corners */
+}
+
+h1 {
+    color: #007bff; /* Blue heading color */
+    margin-bottom: 20px;
+    text-align: center; /* Center the heading */
+}
+
+input[type="file"] {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ced4da; /* Light gray border */
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%; /* Make input take full container width */
+    box-sizing: border-box; /* Include padding and border in width */
+}
+
+#preview {
+    max-width: 100%; /* Image takes full container width */
+    margin-bottom: 20px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#foodName, #calories {
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    text-align: center; /* Center text */
+}
+
+#resultsList {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px; /* Add spacing above the list */
+}
+
+#resultsList li {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    background-color: #f9f9f9; /* Very light gray background for list items */
+}
+
+/* Optional: Add hover effect to list items */
+#resultsList li:hover {
+    background-color: #eee;
+}
+
+/* Basic navbar styling (optional) */
+.navbar {
+    background-color: #007bff; /* Blue navbar background */
+    color: #fff;
+    padding: 10px 20px;
+    width: 100%;
+    position: fixed; /* Fixed to the top */
+    top: 0;
+    left: 0;
+    z-index: 1030; /* Ensure it's above other content */
+}
+
+.navbar-brand {
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+/* Responsive adjustments (optional) */
+@media (max-width: 768px) {
+    .container {
+        width: 90%; /* Adjust container width on smaller screens */
+    }
+}
