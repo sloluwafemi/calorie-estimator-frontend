@@ -109,7 +109,7 @@ async function identifyFood(file) {
             }
         }
 
-        const response = await fetch("https://calorie-estimator-backend.onrender.com", {
+        const response = await fetch("https://calorie-estimator-backend.onrender.com/identify-food", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
