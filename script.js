@@ -1,7 +1,7 @@
 // ***fetchCalorieData() MUST be at the top***
 async function fetchCalorieData(foodName) {
     try {
-        const apiKey = 'ZvHXktHZ/pdnpGCOp/H4Bw==Sfi4OMMAMdmPU0Gj'; // Your provided API key
+        const apiKey = 'ZvHXktHZ/pdnpGCOp/H4Bw==Sfi4OMMAMdmPU0Gj';
         const apiEndpoint = `https://api.calorieninjas.com/v1/nutrition?query=${foodName}`;
 
         const response = await fetch(apiEndpoint, {
@@ -86,12 +86,10 @@ async function identifyFood(file) {
         // Check if the file was accessed from the camera (mobile only)
         if (file.name === undefined) { // No file name means it came from camera
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true }); // Request camera access
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
 
-                // If permission is granted, do nothing (continue with upload)
-                // If permission is denied, throw an error that we'll catch
             } catch (err) {
-                throw new Error("Camera access denied. Please allow camera permissions to use this feature."); // Error message
+                throw new Error("Camera access denied. Please allow camera permissions to use this feature.");
             }
         }
 
@@ -115,11 +113,11 @@ async function identifyFood(file) {
 
         if (concepts && concepts.length > 0) {
             const foodName = concepts[0].name;
-            document.getElementById('foodName').innerText = `Identified Food: ${foodName}`;
-            fetchCalorieData(foodName); // Call the function
+            // No need to set foodName here anymore, it's done in displayResults
+            fetchCalorieData(foodName);
 
             const resultsList = document.getElementById('resultsList');
-            resultsList.innerHTML = ''; // Clear previous results
+            resultsList.innerHTML = '';
 
             concepts.forEach(concept => {
                 const listItem = document.createElement('li');
@@ -128,13 +126,13 @@ async function identifyFood(file) {
             });
 
         } else {
-            document.getElementById('foodName').innerText = "Could not identify food.";
+            // No need to set foodName here anymore, it's done in displayResults
             console.error("No concepts found in response:", data);
         }
 
     } catch (error) {
         console.error("Error identifying food:", error);
-        document.getElementById('foodName').innerText = error.message || "Error identifying food."; // Show error message
+        // No need to set foodName here anymore, it's done in displayResults
         const resultsList = document.getElementById('resultsList');
         resultsList.innerHTML = '';
     }
@@ -154,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = function(e) {
                 document.getElementById('preview').src = e.target.result;
                 document.getElementById('preview').style.display = 'block';
-                identifyFood(file); // Call identifyFood here
+                identifyFood(file);
             };
             reader.readAsDataURL(file);
         }
@@ -169,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         toBase64(file)
             .then(base64 => {
-                fetch('https://calorie-estimator-backend.onrender.com/identify-food', { // Replace with your backend URL
+                fetch('https://calorie-estimator-backend.onrender.com/identify-food', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -197,25 +195,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function displayResults(data) {
-        // Assuming your backend returns data in a similar format as before
-        const foodName = data.foodName; // Adjust if your data structure is different
-        const calories = data.calories; // Adjust if your data structure is different
+        const resultsDiv = document.getElementById('results');
+
+        if (!resultsDiv) {
+            console.error("resultsDiv element not found!");
+            return;
+        }
+
+        const foodName = data.foodName;
+        const calories = data.calories;
 
         resultsDiv.innerHTML = `
-            <p><strong>Identified Food:</strong> ${foodName}</p>
-            <p><strong>Calories:</strong> ${calories}</p>
-            <ul></ul>
-        `;
+            <p id="foodName"><strong>Identified Food:</strong> ${foodName || "N/A"}</p>
+            <p id="calories"><strong>Calories:</strong> ${calories || "N/A"}</p>
+            <ul id="resultsList"></ul>  `; // Add id to the <ul>
 
-        const resultsList = resultsDiv.querySelector('ul');
+        const resultsList = document.getElementById('resultsList'); // Get by ID now
+
         if (data.alternatives && data.alternatives.length > 0) {
             data.alternatives.forEach(alt => {
                 const li = document.createElement('li');
-                li.textContent = `${alt.name} (${Math.round(alt.confidence * 100)}% confident)`;
+                li.textContent = `${alt.name}: ${(alt.value * 100).toFixed(2)}%`;
                 resultsList.appendChild(li);
             });
         }
 
-        resultsDiv.style.display = 'block'; // Show the results
+        resultsDiv.style.display = 'block';
     }
 });
