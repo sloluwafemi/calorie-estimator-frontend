@@ -32,21 +32,83 @@ async function fetchCalorieData(foodName) {
     }
 }
 
+// ***identifyFood function moved ABOVE the event listener***
+async function identifyFood(file) {
+    const base64Image = await toBase64(file);
+
+    try {
+        // Check if the file was accessed from the camera (mobile only)
+        if (file.name === undefined) { // No file name means it came from camera
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true }); // Request camera access
+
+                // If permission is granted, do nothing (continue with upload)
+                // If permission is denied, throw an error that we'll catch
+            } catch (err) {
+                throw new Error("Camera access denied. Please allow camera permissions to use this feature."); // Error message
+            }
+        }
+
+        const response = await fetch("https://calorie-estimator-backend.onrender.com/identify-food", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ image: base64Image })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Backend returned ${response.status}: ${errorData.error || response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("Full Response from Backend:", JSON.stringify(data, null, 2));
+
+        const concepts = data?.outputs?.[0]?.data?.concepts;
+
+        if (concepts && concepts.length > 0) {
+            const foodName = concepts[0].name;
+            document.getElementById('foodName').innerText = `Identified Food: ${foodName}`;
+            fetchCalorieData(foodName); // Call the function
+
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = ''; // Clear previous results
+
+            concepts.forEach(concept => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${concept.name}: ${(concept.value * 100).toFixed(2)}%`;
+                resultsList.appendChild(listItem);
+            });
+
+        } else {
+            document.getElementById('foodName').innerText = "Could not identify food.";
+            console.error("No concepts found in response:", data);
+        }
+
+    } catch (error) {
+        console.error("Error identifying food:", error);
+        document.getElementById('foodName').innerText = error.message || "Error identifying food."; // Show error message
+        const resultsList = document.getElementById('resultsList');
+        resultsList.innerHTML = '';
+    }
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const imageUpload = document.getElementById('imageUpload');
     const preview = document.getElementById('preview');
     const analyzeButton = document.getElementById('analyzeButton');
-    const resultsDiv = document.getElementById('results'); // Get the results div
+    const resultsDiv = document.getElementById('results');
 
     imageUpload.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-                identifyFood(file);
+                document.getElementById('preview').src = e.target.result;
+                document.getElementById('preview').style.display = 'block';
+                identifyFood(file); // Call identifyFood here
             };
             reader.readAsDataURL(file);
         }
@@ -75,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return response.json();
                 })
                 .then(data => {
-                    displayResults(data); // Call displayResults
+                    displayResults(data);
                 })
                 .catch(error => {
                     console.error('Error:', error);
