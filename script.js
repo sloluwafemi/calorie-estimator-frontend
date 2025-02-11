@@ -33,123 +33,126 @@ async function fetchCalorieData(foodName) {
 }
 
 
-document.getElementById('imageUpload').addEventListener('change', function(event) {
-    const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('preview').src = e.target.result;
-            document.getElementById('preview').style.display = 'block';
-            identifyFood(file);
-        };
-        reader.readAsDataURL(file);
+document.addEventListener('DOMContentLoaded', () => {
+    const imageUpload = document.getElementById('imageUpload');
+    const preview = document.getElementById('preview');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const resultsDiv = document.getElementById('results'); // Get the results div
+
+    imageUpload.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                identifyFood(file);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    analyzeButton.addEventListener('click', () => {
+        const file = imageUpload.files[0];
+        if (!file) {
+            alert('Please select an image first.');
+            return;
+        }
+
+        toBase64(file)
+            .then(base64 => {
+                fetch('https://your-backend-name.onrender.com/identify-food', { // Replace with your backend URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: base64 })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {throw new Error(err.message)});
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    displayResults(data); // Call displayResults
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again later.');
+                });
+            })
+            .catch(error => {
+                console.error('Base64 conversion error:', error);
+                alert('There was an error processing the image.');
+            });
+    });
+
+    function toBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                EXIF.getData(file, function() {
+                    const orientation = EXIF.getTag(this, 'Orientation');
+
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+
+                        switch (orientation) {
+                            case 3:
+                                ctx.rotate(Math.PI);
+                                ctx.translate(-img.width, -img.height);
+                                break;
+                            case 6:
+                                ctx.rotate(Math.PI / 2);
+                                ctx.translate(-img.height, 0);
+                                break;
+                            case 8:
+                                ctx.rotate(-Math.PI / 2);
+                                ctx.translate(0, -img.width);
+                                break;
+                        }
+
+                        ctx.drawImage(img, 0, 0);
+
+                        const base64 = canvas.toDataURL('image/jpeg');
+
+                        resolve(base64.split(',')[1]);
+                    };
+                });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    function displayResults(data) {
+        // Assuming your backend returns data in a similar format as before
+        const foodName = data.foodName; // Adjust if your data structure is different
+        const calories = data.calories; // Adjust if your data structure is different
+
+        resultsDiv.innerHTML = `
+            <p><strong>Identified Food:</strong> ${foodName}</p>
+            <p><strong>Calories:</strong> ${calories}</p>
+            <ul></ul>
+        `;
+
+        const resultsList = resultsDiv.querySelector('ul');
+        if (data.alternatives && data.alternatives.length > 0) {
+            data.alternatives.forEach(alt => {
+                const li = document.createElement('li');
+                li.textContent = `${alt.name} (${Math.round(alt.confidence * 100)}% confident)`;
+                resultsList.appendChild(li);
+            });
+        }
+
+        resultsDiv.style.display = 'block'; // Show the results
     }
 });
-
-function toBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            EXIF.getData(file, function() {  // Get EXIF data
-                const orientation = EXIF.getTag(this, 'Orientation'); // Get orientation tag
-
-                const img = document.createElement('img'); // Create a temporary image element
-                img.src = event.target.result;
-
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-
-                    // Set canvas dimensions (adjust as needed)
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-
-                    // Apply rotation based on orientation
-                    switch (orientation) {
-                        case 3: // 180 degrees
-                            ctx.rotate(Math.PI);
-                            ctx.translate(-img.width, -img.height);
-                            break;
-                        case 6: // 90 degrees clockwise
-                            ctx.rotate(Math.PI / 2);
-                            ctx.translate(-img.height, 0);
-                            break;
-                        case 8: // 90 degrees counterclockwise
-                            ctx.rotate(-Math.PI / 2);
-                            ctx.translate(0, -img.width);
-                            break;
-                    }
-
-                    ctx.drawImage(img, 0, 0);  // Draw the rotated image onto the canvas
-
-                    const base64 = canvas.toDataURL('image/jpeg'); // Get base64 from the canvas
-
-                    resolve(base64.split(',')[1]); // Resolve with base64 data
-                };
-            });
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-async function identifyFood(file) {
-    const base64Image = await toBase64(file);
-
-    try {
-        // Check if the file was accessed from the camera (mobile only)
-        if (file.name === undefined) { // No file name means it came from camera
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true }); // Request camera access
-
-                // If permission is granted, do nothing (continue with upload)
-                // If permission is denied, throw an error that we'll catch
-            } catch (err) {
-                throw new Error("Camera access denied. Please allow camera permissions to use this feature."); // Error message
-            }
-        }
-
-        const response = await fetch("https://calorie-estimator-backend.onrender.com/identify-food", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ image: base64Image })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Backend returned ${response.status}: ${errorData.error || response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log("Full Response from Backend:", JSON.stringify(data, null, 2));
-
-        const concepts = data?.outputs?.[0]?.data?.concepts;
-
-        if (concepts && concepts.length > 0) {
-            const foodName = concepts[0].name;
-            document.getElementById('foodName').innerText = `Identified Food: ${foodName}`;
-            fetchCalorieData(foodName); // Call the function
-
-            const resultsList = document.getElementById('resultsList');
-            resultsList.innerHTML = ''; // Clear previous results
-
-            concepts.forEach(concept => {
-                const listItem = document.createElement('li');
-                listItem.textContent = `${concept.name}: ${(concept.value * 100).toFixed(2)}%`;
-                resultsList.appendChild(listItem);
-            });
-
-        } else {
-            document.getElementById('foodName').innerText = "Could not identify food.";
-            console.error("No concepts found in response:", data);
-        }
-
-    } catch (error) {
-        console.error("Error identifying food:", error);
-        document.getElementById('foodName').innerText = error.message || "Error identifying food."; // Show error message
-        const resultsList = document.getElementById('resultsList');
-        resultsList.innerHTML = '';
-    }
-}
