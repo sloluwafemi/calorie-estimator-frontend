@@ -1,43 +1,44 @@
+/* Your original styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font stack */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    background-color: #f8f9fa; /* Very light gray background */
-    color: #343a40; /* Dark gray text */
+    background-color: #f8f9fa;
+    color: #343a40;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    padding-top: 60px; /* Add top padding for navbar */
+    padding-top: 60px;
 }
 
 .container {
-    width: 80%; /* Occupy most of the screen width */
-    max-width: 960px; /* Set a maximum width for larger screens */
-    margin: 0 auto; /* Center the container */
+    width: 80%;
+    max-width: 960px;
+    margin: 0 auto;
     padding: 20px;
-    background-color: #fff; /* White background for content area */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    border-radius: 8px; /* Rounded corners */
+    background-color: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
 }
 
 h1 {
-    color: #007bff; /* Blue heading color */
+    color: #007bff;
     margin-bottom: 20px;
-    text-align: center; /* Center the heading */
+    text-align: center;
 }
 
 input[type="file"] {
     margin-bottom: 20px;
     padding: 10px;
-    border: 1px solid #ced4da; /* Light gray border */
+    border: 1px solid #ced4da;
     border-radius: 5px;
     cursor: pointer;
-    width: 100%; /* Make input take full container width */
-    box-sizing: border-box; /* Include padding and border in width */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #preview {
-    max-width: 100%; /* Image takes full container width */
+    max-width: 100%;
     margin-bottom: 20px;
     border: 1px solid #ced4da;
     border-radius: 5px;
@@ -47,13 +48,13 @@ input[type="file"] {
 #foodName, #calories {
     margin-bottom: 10px;
     font-size: 1.2em;
-    text-align: center; /* Center text */
+    text-align: center;
 }
 
 #resultsList {
     list-style: none;
     padding: 0;
-    margin-top: 20px; /* Add spacing above the list */
+    margin-top: 20px;
 }
 
 #resultsList li {
@@ -61,24 +62,22 @@ input[type="file"] {
     padding: 10px;
     border: 1px solid #ced4da;
     border-radius: 5px;
-    background-color: #f9f9f9; /* Very light gray background for list items */
+    background-color: #f9f9f9;
 }
 
-/* Optional: Add hover effect to list items */
 #resultsList li:hover {
     background-color: #eee;
 }
 
-/* Basic navbar styling (optional) */
 .navbar {
-    background-color: #007bff; /* Blue navbar background */
+    background-color: #007bff;
     color: #fff;
     padding: 10px 20px;
     width: 100%;
-    position: fixed; /* Fixed to the top */
+    position: fixed;
     top: 0;
     left: 0;
-    z-index: 1030; /* Ensure it's above other content */
+    z-index: 1030;
 }
 
 .navbar-brand {
@@ -87,9 +86,171 @@ input[type="file"] {
     text-decoration: none;
 }
 
-/* Responsive adjustments (optional) */
 @media (max-width: 768px) {
     .container {
-        width: 90%; /* Adjust container width on smaller screens */
+        width: 90%;
     }
+}
+
+
+/* New styles for the homepage layout (ADD THESE TO YOUR EXISTING CSS) */
+.object-cover {
+    object-fit: cover;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.bg-black-opacity-50 {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.text-white {
+    color: white;
+}
+
+.text-4xl {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+}
+
+@media (min-width: 768px) {
+    .text-4xl {
+        font-size: 3rem;
+        line-height: 3.5rem;
+    }
+}
+
+.text-5xl {
+    font-size: 3.75rem;
+    line-height: 4rem;
+}
+
+@media (min-width: 768px) {
+    .text-5xl {
+        font-size: 4.5rem;
+        line-height: 4.5rem;
+    }
+}
+
+.font-bold {
+    font-weight: bold;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+}
+
+@media (min-width: 768px) {
+    .text-xl {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+}
+
+.text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+}
+
+@media (min-width: 768px) {
+    .text-2xl {
+        font-size: 1.75rem;
+        line-height: 2.25rem;
+    }
+}
+
+.mt-8 {
+    margin-top: 2rem;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.bg-green-500 {
+    background-color: #4CAF50;
+}
+
+.hover-bg-green-600 {
+    transition: background-color 0.3s;
+}
+
+.hover-bg-green-600:hover {
+    background-color: #45a049;
+}
+
+.py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+
+.transition {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+}
+
+.max-w-md {
+    max-width: 28rem;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.p-8 {
+    padding: 2rem;
 }
