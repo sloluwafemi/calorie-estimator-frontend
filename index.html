@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Belfiore Medical Aesthetics Food Calorie Estimator</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>  </head>
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+</head>
 <body>
-    <div class="container">  <h1>Belfiore Medical Aesthetics Calorie Estimator</h1>
-        <input type="file" id="imageUpload" accept="image/*" capture="camera">
-        <img id="preview" src="" alt="Image Preview" style="display:none; max-width: 300px;">
-        <p id="foodName"></p>
-        <p id="calories"></p>
-        <ul id="resultsList"></ul>
-    </div>  <script src="script.js"></script>
-</body>
+    <div class="relative h-screen">  <img src="healthy-food-background.jpg" alt="Delicious healthy food" class="object-cover w-full h-full"> <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center text-white"> <div class="max-w-md mx-auto p-8 text-center">  <h1 class="text-4xl md:text-5xl font-bold mb-4">CalorieAI</h1>
+                <p class="text-xl md:text-2xl mb-6">Unlock the Power of Smart Nutrition</p>
+                <a href="upload.html"> <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full transition duration-300">
+                    Start Now
+                </button> </a>
+                <p class="mt-8 text-sm">From a simple photo, get detailed nutritional information in seconds.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script> </body>
 </html>
