@@ -32,6 +32,52 @@ async function fetchCalorieData(foodName) {
     }
 }
 
+// ***toBase64 function moved OUTSIDE the DOMContentLoaded listener***
+function toBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            EXIF.getData(file, function() {
+                const orientation = EXIF.getTag(this, 'Orientation');
+
+                const img = document.createElement('img');
+                img.src = event.target.result;
+
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+
+                    switch (orientation) {
+                        case 3:
+                            ctx.rotate(Math.PI);
+                            ctx.translate(-img.width, -img.height);
+                            break;
+                        case 6:
+                            ctx.rotate(Math.PI / 2);
+                            ctx.translate(-img.height, 0);
+                            break;
+                        case 8:
+                            ctx.rotate(-Math.PI / 2);
+                            ctx.translate(0, -img.width);
+                            break;
+                    }
+
+                    ctx.drawImage(img, 0, 0);
+
+                    const base64 = canvas.toDataURL('image/jpeg');
+
+                    resolve(base64.split(',')[1]);
+                };
+            });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 // ***identifyFood function moved ABOVE the event listener***
 async function identifyFood(file) {
     const base64Image = await toBase64(file);
@@ -123,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         toBase64(file)
             .then(base64 => {
-                fetch('https://your-backend-name.onrender.com/identify-food', { // Replace with your backend URL
+                fetch('https://calorie-estimator-backend.onrender.com/identify-food', { // Replace with your backend URL
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -149,51 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('There was an error processing the image.');
             });
     });
-
-    function toBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                EXIF.getData(file, function() {
-                    const orientation = EXIF.getTag(this, 'Orientation');
-
-                    const img = document.createElement('img');
-                    img.src = event.target.result;
-
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-
-                        switch (orientation) {
-                            case 3:
-                                ctx.rotate(Math.PI);
-                                ctx.translate(-img.width, -img.height);
-                                break;
-                            case 6:
-                                ctx.rotate(Math.PI / 2);
-                                ctx.translate(-img.height, 0);
-                                break;
-                            case 8:
-                                ctx.rotate(-Math.PI / 2);
-                                ctx.translate(0, -img.width);
-                                break;
-                        }
-
-                        ctx.drawImage(img, 0, 0);
-
-                        const base64 = canvas.toDataURL('image/jpeg');
-
-                        resolve(base64.split(',')[1]);
-                    };
-                });
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
 
     function displayResults(data) {
         // Assuming your backend returns data in a similar format as before
