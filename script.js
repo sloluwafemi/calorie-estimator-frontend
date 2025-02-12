@@ -1,7 +1,7 @@
 // ***fetchCalorieData() MUST be at the top***
 async function fetchCalorieData(foodName) {
     try {
-        const apiKey = 'ZvHXktHZ/pdnpGCOp/H4Bw==Sfi4OMMAMdmPU0Gj';
+        const apiKey = 'ZvHXktHZ/pdnpGCOp/H4Bw==Sfi4OMMAMdmPU0Gj'; // Your provided API key
         const apiEndpoint = `https://api.calorieninjas.com/v1/nutrition?query=${foodName}`;
 
         const response = await fetch(apiEndpoint, {
@@ -20,56 +20,71 @@ async function fetchCalorieData(foodName) {
 
         if (data.items && data.items.length > 0) {
             const calories = data.items[0].calories;
-            // Set calories in displayResults
+            document.getElementById('calories').innerText = `Calories: ${calories}`;
         } else {
-            // Set calories in displayResults
+            document.getElementById('calories').innerText = "Calorie information not found.";
             console.error("Unexpected calorie API response:", data);
         }
 
     } catch (error) {
         console.error("Error fetching calorie data:", error);
-        // Set calories in displayResults
+        document.getElementById('calories').innerText = "Error fetching calorie information.";
     }
 }
 
-// ***toBase64 function moved OUTSIDE the DOMContentLoaded listener***
+
+document.getElementById('imageUpload').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview').src = e.target.result;
+            document.getElementById('preview').style.display = 'block';
+            identifyFood(file);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
 function toBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (event) => {
-            EXIF.getData(file, function() {
-                const orientation = EXIF.getTag(this, 'Orientation');
+            EXIF.getData(file, function() {  // Get EXIF data
+                const orientation = EXIF.getTag(this, 'Orientation'); // Get orientation tag
 
-                const img = document.createElement('img');
+                const img = document.createElement('img'); // Create a temporary image element
                 img.src = event.target.result;
 
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
+                    // Set canvas dimensions (adjust as needed)
                     canvas.width = img.width;
                     canvas.height = img.height;
 
+                    // Apply rotation based on orientation
                     switch (orientation) {
-                        case 3:
+                        case 3: // 180 degrees
                             ctx.rotate(Math.PI);
                             ctx.translate(-img.width, -img.height);
                             break;
-                        case 6:
+                        case 6: // 90 degrees clockwise
                             ctx.rotate(Math.PI / 2);
                             ctx.translate(-img.height, 0);
                             break;
-                        case 8:
+                        case 8: // 90 degrees counterclockwise
                             ctx.rotate(-Math.PI / 2);
                             ctx.translate(0, -img.width);
                             break;
                     }
 
-                    ctx.drawImage(img, 0, 0);
+                    ctx.drawImage(img, 0, 0);  // Draw the rotated image onto the canvas
 
-                    const base64 = canvas.toDataURL('image/jpeg');
+                    const base64 = canvas.toDataURL('image/jpeg'); // Get base64 from the canvas
 
-                    resolve(base64.split(',')[1]);
+                    resolve(base64.split(',')[1]); // Resolve with base64 data
                 };
             });
         };
@@ -78,15 +93,28 @@ function toBase64(file) {
     });
 }
 
-// ***identifyFood function moved ABOVE the event listener***
 async function identifyFood(file) {
     const base64Image = await toBase64(file);
 
     try {
-        // ... (Your existing camera access check code)
+        // Check if the file was accessed from the camera (mobile only)
+        if (file.name === undefined) { // No file name means it came from camera
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true }); // Request camera access
+
+                // If permission is granted, do nothing (continue with upload)
+                // If permission is denied, throw an error that we'll catch
+            } catch (err) {
+                throw new Error("Camera access denied. Please allow camera permissions to use this feature."); // Error message
+            }
+        }
 
         const response = await fetch("https://calorie-estimator-backend.onrender.com/identify-food", {
-            // ... (Your existing fetch request code)
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ image: base64Image })
         });
 
         if (!response.ok) {
@@ -101,56 +129,27 @@ async function identifyFood(file) {
 
         if (concepts && concepts.length > 0) {
             const foodName = concepts[0].name;
-            fetchCalorieData(foodName); // Call fetchCalorieData
+            document.getElementById('foodName').innerText = `Identified Food: ${foodName}`;
+            fetchCalorieData(foodName); // Call the function
 
-            // ... (Your existing code to populate resultsList)
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = ''; // Clear previous results
+
+            concepts.forEach(concept => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${concept.name}: ${(concept.value * 100).toFixed(2)}%`;
+                resultsList.appendChild(listItem);
+            });
 
         } else {
+            document.getElementById('foodName').innerText = "Could not identify food.";
             console.error("No concepts found in response:", data);
         }
 
     } catch (error) {
         console.error("Error identifying food:", error);
-        // ... (Your existing error handling code)
-    }
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    // ... (Your existing DOMContentLoaded event listener code)
-});
-
-
-function displayResults(data) {
-    const resultsDiv = document.getElementById('results');
-
-    if (!resultsDiv) {
-        console.error("resultsDiv element not found!");
-        return;
-    }
-
-    const foodName = data.foodName || "N/A";
-    const calories = data.calories || "N/A";
-
-    resultsDiv.innerHTML = `
-        <p id="foodName"><strong>Identified Food:</strong> ${foodName}</p>
-        <p id="calories"><strong>Calories:</strong> ${calories}</p>
-        <ul id="resultsList"></ul>
-    `;
-
-    const resultsList = document.getElementById('resultsList');
-
-    if (data.alternatives && data.alternatives.length > 0) {
-        // ... (Your existing code to populate resultsList)
-    }
-
-    resultsDiv.style.display = 'block';
-
-    // Now set the calories here, after the element is created:
-    const caloriesElement = document.getElementById('calories');
-    if (caloriesElement) {
-      caloriesElement.innerText = `Calories: ${calories}`;
-    } else {
-      console.error("Calories element not found!");
+        document.getElementById('foodName').innerText = error.message || "Error identifying food."; // Show error message
+        const resultsList = document.getElementById('resultsList');
+        resultsList.innerHTML = '';
     }
 }
