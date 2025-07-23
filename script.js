@@ -60,9 +60,15 @@ function toBase64(file) {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
 
-                    // Set canvas dimensions (adjust as needed)
-                    canvas.width = img.width;
-                    canvas.height = img.height;
+                    // Set canvas dimensions based on orientation
+                    if (orientation >= 5 && orientation <= 8) {
+                        // For 90° rotations swap width/height
+                        canvas.width = img.height;
+                        canvas.height = img.width;
+                    } else {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                    }
 
                     // Apply rotation based on orientation
                     switch (orientation) {
@@ -72,11 +78,11 @@ function toBase64(file) {
                             break;
                         case 6: // 90 degrees clockwise
                             ctx.rotate(Math.PI / 2);
-                            ctx.translate(-img.height, 0);
+                            ctx.translate(0, -img.height);
                             break;
                         case 8: // 90 degrees counterclockwise
                             ctx.rotate(-Math.PI / 2);
-                            ctx.translate(0, -img.width);
+                            ctx.translate(-img.width, 0);
                             break;
                     }
 
